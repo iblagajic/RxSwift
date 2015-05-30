@@ -16,18 +16,17 @@ protocol KVOObservableProtocol {
 }
 
 class KVOObserver : NSObject, Disposable {
-    typealias Callback = (AnyObject?) -> Void
     
     let parent: KVOObservableProtocol
-    let callback: Callback
+    let sink: SinkOf<AnyObject?>
     
     var retainSelf: KVOObserver? = nil
     
     var context: UInt8 = 0
     
-    init(parent: KVOObservableProtocol, callback: Callback) {
+    init(parent: KVOObservableProtocol, callback: (AnyObject?) -> Void) {
         self.parent = parent
-        self.callback = callback
+        self.sink = SinkOf(callback)
         
         super.init()
         
@@ -44,7 +43,7 @@ class KVOObserver : NSObject, Disposable {
         let newValue: AnyObject? = change[NSKeyValueChangeNewKey]
         
         if let newValue: AnyObject = newValue {
-            self.callback(newValue)
+            self.sink.put(newValue)
         }
     }
     

@@ -22,21 +22,19 @@ import RxSwift
 
 // This should be only used from `MainScheduler`
 class ControlTarget: NSObject, Disposable {
-    typealias Callback = (Control) -> Void
-    
     let selector: Selector = "eventHandler:"
     
     let control: Control
 #if os(iOS)
     let controlEvents: UIControlEvents
 #endif
-    var callback: Callback?
+    var sink: SinkOf<Control>?
     
 #if os(iOS)
-    init(control: Control, controlEvents: UIControlEvents, callback: Callback) {
+    init(control: Control, controlEvents: UIControlEvents, callback: (Control) -> Void) {
         self.control = control
         self.controlEvents = controlEvents
-        self.callback = callback
+        self.sink = SinkOf(callback)
         
         super.init()
         
@@ -48,9 +46,9 @@ class ControlTarget: NSObject, Disposable {
         }
     }
 #elseif os(OSX)
-    init(control: Control, callback: Callback) {
+    init(control: Control, callback: (Control) -> Void) {
         self.control = control
-        self.callback = callback
+        self.sink = SinkOf(callback)
         
         super.init()
         
@@ -65,9 +63,7 @@ class ControlTarget: NSObject, Disposable {
 #endif
    
     func eventHandler(sender: Control!) {
-        if let callback = self.callback {
-            callback(self.control)
-        }
+        self.sink?.put(self.control)
     }
     
     func dispose() {
@@ -79,7 +75,7 @@ class ControlTarget: NSObject, Disposable {
         self.control.target = nil
         self.control.action = nil
 #endif
-        self.callback = nil
+        self.sink = nil
     }
     
     deinit {
