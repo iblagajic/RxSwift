@@ -41,10 +41,22 @@ class ViewController: OSViewController {
         print("View controller disposed with \(resourceCount) resources")
     
         let numberOfResourcesThatShouldRemain = startResourceCount
-        let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC)))
-        dispatch_after(time, dispatch_get_main_queue(), { () -> Void in
-            assert(resourceCount <= numberOfResourcesThatShouldRemain, "Resources weren't cleaned properly")
-        })
+        let timeInt0 = dispatch_time(DISPATCH_TIME_NOW, Int64(0.0001 * Double(NSEC_PER_SEC)))
+        let time0 = NSDate()
+        dispatch_after(timeInt0, dispatch_get_main_queue()) {
+            let time1 = NSDate()
+            print(time1.timeIntervalSinceDate(time0))
+            
+            let time = dispatch_time(DISPATCH_TIME_NOW, Int64(0.03 * Double(NSEC_PER_SEC)))
+            dispatch_after(time, dispatch_get_main_queue()) {
+                let time2 = NSDate()
+                print(time2.timeIntervalSinceDate(time1))
+                let areTheyCleaned = resourceCount <= numberOfResourcesThatShouldRemain
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.05 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+                    assert(areTheyCleaned, "Resources weren't cleaned properly")
+                }
+            }
+        }
 #endif
     }
 }

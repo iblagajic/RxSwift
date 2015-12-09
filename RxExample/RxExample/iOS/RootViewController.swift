@@ -14,8 +14,11 @@ import UIKit
 #endif
 
 public class RootViewController : UITableViewController {
+    var timeFormatter = NSDateFormatter()
     public override func viewDidLoad() {
         super.viewDidLoad()
+        timeFormatter.dateFormat = "HH:mm:ss.SSS"
+        //NSTimer.scheduledTimerWithTimeInterval(0.001, target: self, selector: "doIt", userInfo: nil, repeats: true)
         // force load
         GitHubSearchRepositoriesAPI.sharedAPI.activityIndicator
         DefaultWikipediaAPI.sharedAPI
@@ -23,5 +26,9 @@ public class RootViewController : UITableViewController {
         DefaultWireframe.sharedInstance
         MainScheduler.sharedInstance
         ReachabilityService.sharedReachabilityService
+    }
+
+    public func doIt() {
+        print("\(timeFormatter.stringFromDate(NSDate())): \(RxSwift.resourceCount)")
     }
 }
